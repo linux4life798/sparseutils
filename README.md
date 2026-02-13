@@ -1,6 +1,7 @@
 # stringspeed
 
-`stringspeed` is a simplified `strings`-style tool.
+`stringspeed` is a `strings`-style tool optimized for sparse files, avoiding the
+long slowdowns traditional `strings` can hit when traversing very large hole regions.
 
 ## What it does
 
@@ -8,26 +9,17 @@
 - Supports `-` to read from standard input.
 - Prints runs of at least 4 UTF-8 characters.
 - Treats control characters and invalid UTF-8 as separators.
+- Treats sparse hole regions as separators (equivalent to runs of NUL bytes).
 
-## Sparse-file behavior (Linux)
+## Sparse-file behavior
 
-For regular files on Linux, `stringspeed` tries to use sparse extent discovery with
-`SEEK_DATA` / `SEEK_HOLE` and only reads allocated data ranges.
+When possible, `stringspeed` skips sparse hole regions instead of scanning long runs of
+zeros.
 
-- Hole regions are treated as separators (same practical effect as runs of zero bytes).
-- If sparse extent discovery is not supported by the filesystem/kernel, it falls back
-  to normal buffered sequential scanning.
+- Hole regions are treated as separators (same practical effect as NUL bytes).
+- If hole-skipping is unavailable, `stringspeed` prints a short note to stderr and
+  continues with normal sequential scanning.
 - Streams and non-regular files are scanned sequentially.
 
 This keeps scanning efficient on sparse files without getting stuck walking large hole
 regions byte-by-byte.
-
-## Future portability note
-
-Sparse extent APIs vary by OS:
-
-- Linux: `lseek(SEEK_DATA/SEEK_HOLE)`
-- macOS/BSD: similar `SEEK_DATA/SEEK_HOLE` support with platform-specific behavior
-- Windows: `FSCTL_QUERY_ALLOCATED_RANGES`
-
-A future cross-platform implementation would likely need platform-specific backends.
