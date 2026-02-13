@@ -11,7 +11,7 @@ const READ_BUF_SIZE: usize = 8 * 1024;
 const MAX_UTF8_CARRY: usize = 3;
 
 #[derive(Parser, Debug)]
-#[command(name = "stringspeed")]
+#[command(name = "sparsestrings")]
 struct Cli {
     #[arg(required = true)]
     files: Vec<PathBuf>,
@@ -203,7 +203,7 @@ fn scan_path(path: &Path) -> io::Result<()> {
             Ok(segments) => scan_regular_file_sparse(&mut file, &mut scanner, &segments)?,
             Err(err) => {
                 eprintln!(
-                    "stringspeed: {}: sparse scan failed ({}); falling back to sequential scan",
+                    "sparsestrings: {}: sparse scan failed ({}); falling back to sequential scan",
                     path.display(),
                     sparse_error_brief(&err),
                 );
@@ -225,7 +225,7 @@ fn main() -> ExitCode {
 
     for path in &cli.files {
         if let Err(err) = scan_path(path) {
-            eprintln!("stringspeed: {}: {}", path.display(), err);
+            eprintln!("sparsestrings: {}: {}", path.display(), err);
             had_error = true;
         }
     }

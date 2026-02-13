@@ -1,6 +1,6 @@
-# stringspeed
+# sparsestrings
 
-`stringspeed` is a `strings`-style tool optimized for sparse files, avoiding the
+`sparsestrings` is a `strings`-style tool optimized for sparse files, avoiding the
 long slowdowns traditional `strings` can hit when traversing very large hole regions.
 
 ## What it does
@@ -13,11 +13,11 @@ long slowdowns traditional `strings` can hit when traversing very large hole reg
 
 ## Sparse-file behavior
 
-When possible, `stringspeed` skips sparse hole regions instead of scanning long runs of
+When possible, `sparsestrings` skips sparse hole regions instead of scanning long runs of
 zeros.
 
 - Hole regions are treated as separators (same practical effect as NUL bytes).
-- If hole-skipping is unavailable, `stringspeed` prints a short note to stderr and
+- If hole-skipping is unavailable, `sparsestrings` prints a short note to stderr and
   continues with normal sequential scanning.
 - Streams and non-regular files are scanned sequentially.
 
