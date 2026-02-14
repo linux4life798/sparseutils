@@ -1,10 +1,14 @@
-[workspace]
-resolver = "3"
-
 [package]
 name = "sparseutils"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85"
+description = "Small command-line utilities for working with sparse files"
+readme = "README.md"
+repository = "https://github.com/linux4life798/sparseutils"
+license = "Apache-2.0"
+keywords = ["sparse", "files", "cli"]
+categories = ["command-line-utilities", "filesystem"]
 default-run = "sparsestrings"
 
 [dependencies]
