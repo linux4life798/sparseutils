@@ -4,7 +4,8 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::Parser;
-use drill_press::{ScanError, SegmentType, SparseFile};
+use drill_press::SparseFile;
+use sparseutils::sparse_io::{sparse_error_brief, visit_sparse_segments};
 
 const MIN_STRING_LEN: usize = 4;
 const READ_BUF_SIZE: usize = 8 * 1024;
@@ -130,7 +131,7 @@ impl StringScanner {
 }
 
 /// Sequential buffered scan used for streams and as sparse-detection fallback.
-fn scan_reader<R: Read>(reader: &mut R, scanner: &mut StringScanner) -> io::Result<()> {
+fn scan_reader<R: Read + ?Sized>(reader: &mut R, scanner: &mut StringScanner) -> io::Result<()> {
     let mut read_buf = [0_u8; READ_BUF_SIZE];
 
     loop {
@@ -149,38 +150,22 @@ fn scan_regular_file_sparse(
     scanner: &mut StringScanner,
     segments: &[drill_press::Segment],
 ) -> io::Result<()> {
-    for segment in segments {
-        if segment.range.is_empty() {
-            continue;
-        }
-
-        match segment.segment_type {
-            SegmentType::Hole => scanner.hole_break(),
-            SegmentType::Data => {
-                let len = segment.range.end - segment.range.start;
-                file.seek(SeekFrom::Start(segment.range.start))?;
-                let limited = (&mut *file).take(len);
-                let mut reader = BufReader::new(limited);
-                scan_reader(&mut reader, scanner)?;
-            }
-        }
-    }
-
-    Ok(())
+    visit_sparse_segments(
+        file,
+        segments,
+        scanner,
+        |scanner, reader| scan_reader(reader, scanner),
+        |scanner, _start, _len| {
+            scanner.hole_break();
+            Ok(())
+        },
+    )
 }
 
 fn scan_regular_file_sequential(file: &mut File, scanner: &mut StringScanner) -> io::Result<()> {
     file.seek(SeekFrom::Start(0))?;
     let mut reader = BufReader::new(file);
     scan_reader(&mut reader, scanner)
-}
-
-fn sparse_error_brief(err: &ScanError) -> String {
-    match err {
-        ScanError::UnsupportedPlatform => "unsupported platform".to_string(),
-        ScanError::UnsupportedFileSystem => "unsupported filesystem sparse API".to_string(),
-        ScanError::IO(ioe) => ioe.to_string(),
-    }
 }
 
 /// Scans a single CLI path, where "-" means stdin.
