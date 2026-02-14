@@ -126,21 +126,15 @@ fn squeeze_path<W: Write + ?Sized>(
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
-    let mut had_error = false;
-
     let stdout = io::stdout();
     let mut out = stdout.lock();
 
     for path in &cli.files {
         if let Err(err) = squeeze_path(path, &mut out, cli.nulls) {
             eprintln!("sparsesqueeze: {}: {}", path.display(), err);
-            had_error = true;
+            return ExitCode::FAILURE;
         }
     }
 
-    if had_error {
-        ExitCode::FAILURE
-    } else {
-        ExitCode::SUCCESS
-    }
+    ExitCode::SUCCESS
 }

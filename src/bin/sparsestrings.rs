@@ -206,18 +206,13 @@ fn scan_path(path: &Path) -> io::Result<()> {
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
-    let mut had_error = false;
 
     for path in &cli.files {
         if let Err(err) = scan_path(path) {
             eprintln!("sparsestrings: {}: {}", path.display(), err);
-            had_error = true;
+            return ExitCode::FAILURE;
         }
     }
 
-    if had_error {
-        ExitCode::FAILURE
-    } else {
-        ExitCode::SUCCESS
-    }
+    ExitCode::SUCCESS
 }
