@@ -19,8 +19,8 @@ cargo install sparseutils
 
   ```bash
   truncate -s 1T sparse.bin
-  echo "Beginning" | dd of=sparse.bin bs=1 seek=0 conv=notrunc status=none
-  echo "End"       | dd of=sparse.bin bs=1 seek=1T conv=notrunc status=none
+  echo "Beginning" | dd of=sparse.bin bs=1 seek=0 conv=notrunc
+  echo "End"       | dd of=sparse.bin bs=1 seek=1T conv=notrunc
   ```
 
   *Running `strings` directly on this file can take a long time before reaching data near the end.*
